@@ -1,2 +1,2 @@
 # random-item-picker
-html css javascript implementation of a random name picker
+Various simple implementations of random item pickers.
