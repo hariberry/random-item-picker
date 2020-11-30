@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Random Item Picker</title>
+    
+	<link rel="stylesheet" href="mvp.css">
+	<style>
+		#picksRow{
+			height: 200px;
+		}		
+		#picksRow td {
+			border: 4px solid gray;
+			word-break: break-all;
+			vertical-align:top;
+		}
+		
+		.highlight {
+			background-color: Chartreuse;
+		}
+	</style>
+    
+  </head>
+  <body>
+  
+	<h1>Random Item Picker</h1>
+	<h2>Items</h2>
+	<textarea name="items" id="items" ></textarea><br/>
+	<input type="button" name="setItems" id="setItems" value="OK"/>
+	<h2>Picks</h2>
+	<input type="button" name="pickRandom" id="pickRandom" value="Pick Random Item"/>
+    
+	<table style="width: 95%; border-collapse: collapse;">
+	<tr id="picksRow" >
+	<td></td>
+	</tr>
+	</table>
+	
+	<script type="text/javascript">
+		var randomPicker = randomPicker || {};
+		window.randomPicker = randomPicker;
+		
+		randomPicker.reCreateItems = function ()
+		{
+			var randomPicker = window.randomPicker;
+			var picksRow = document.getElementById("picksRow");
+			picksRow.innerHTML = "";
+			randomPicker.items.forEach(function (item, i) {
+			
+				var itemElement = document.createElement("td");
+				var width = randomPicker.probabilities[i] * 100;
+				
+				itemElement.innerText = width.toFixed(1) + "% " + item;
+				itemElement.setAttribute("style","width:" + width + "%" );
+				itemElement.setAttribute("id","item_" + i);
+				picksRow.appendChild(itemElement);
+			});
+		}
+		
+		randomPicker.setItems = function ()
+		{
+			var randomPicker = window.randomPicker;
+			var itemsText = document.getElementById("items").value;
+			randomPicker.items = itemsText.trim().split("\n");
+			randomPicker.probabilities = []
+			randomPicker.items.forEach(function (item, i) {
+				randomPicker.probabilities.push(1 / randomPicker.items.length);
+			});
+			
+			randomPicker.reCreateItems();
+		};
+		
+		randomPicker.pickRandomItem = function ()
+		{
+			var randomNumber = Math.random();
+			var sum = 0;
+			var personSelected = 0;
+			
+			for (var i = 0; i < randomPicker.probabilities.length; i++)
+			{
+				sum += randomPicker.probabilities[i];
+				personSelected = i;
+				if (randomNumber <= sum)
+				{
+					break;
+				}
+			}
+			
+			var probToGiveAway = randomPicker.probabilities[personSelected] / 2;
+			randomPicker.probabilities[personSelected] = probToGiveAway;
+			var probToAdd = probToGiveAway / (randomPicker.probabilities.length - 1);
+			
+			for (var i = 0; i < randomPicker.probabilities.length; i++)
+			{
+				if (i != personSelected)
+				{
+					randomPicker.probabilities[i] += probToAdd;
+				}
+			}
+			
+			randomPicker.reCreateItems();
+			
+			var itemId = "item_" + personSelected;
+			document.getElementById(itemId).classList.add("highlight");
+			console.log(randomPicker.probabilities)
+		};
+		
+		document.getElementById("setItems").onclick = randomPicker.setItems;
+		document.getElementById("pickRandom").onclick = randomPicker.pickRandomItem;
+	</script>
+	
+  </body>
+</html>
